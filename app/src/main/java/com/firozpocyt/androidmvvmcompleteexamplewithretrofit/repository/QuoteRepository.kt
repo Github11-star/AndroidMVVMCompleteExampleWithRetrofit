@@ -32,7 +32,13 @@ class QuoteRepository(
             val quoteList = QuoteList(1,1,1,quote,1,1)
             quotesLiveData.postValue(quoteList)
         }
+    }
 
-
+    suspend fun getQuotesBackground() {
+        val randomNumber = (Math.random() * 10).toInt()
+        val result = quoteService.getQuotes(randomNumber)
+        if (result.body() !=null){
+            quoteDatabase.quoteDao().addQuote(result.body()!!.results)
+        }
     }
 }
