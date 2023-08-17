@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.firozpocyt.androidmvvmcompleteexamplewithretrofit.repository.Response
 import com.firozpocyt.androidmvvmcompleteexamplewithretrofit.viewmodels.MainViewModel
 import com.firozpocyt.androidmvvmcompleteexamplewithretrofit.viewmodels.MainViewModelFactory
 
@@ -20,8 +21,17 @@ class MainActivity : AppCompatActivity() {
 
         mainViewModel = ViewModelProvider(this, MainViewModelFactory(repository))[MainViewModel::class.java]
         mainViewModel.quotes.observe(this, Observer {
-            //Log.d("FirozPOC", it.results.toString())
-            Toast.makeText(this@MainActivity, it.results.size.toString(), Toast.LENGTH_SHORT).show()
+            when(it){
+                is Response.Loading ->{}
+                is Response.Error -> {
+                    Toast.makeText(this@MainActivity, "Some error occurred", Toast.LENGTH_SHORT).show()
+                }
+                is Response.Success -> {
+                    it.data?.let {
+                        Toast.makeText(this@MainActivity, it.results.size.toString(), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         })
     }
 }

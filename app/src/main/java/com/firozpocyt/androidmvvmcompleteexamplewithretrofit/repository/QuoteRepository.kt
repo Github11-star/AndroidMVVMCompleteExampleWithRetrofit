@@ -14,23 +14,30 @@ class QuoteRepository(
     private val applicationContext: Context
 ) {
 
-    private val quotesLiveData = MutableLiveData<QuoteList>()
+    private val quotesLiveData = MutableLiveData<Response<QuoteList>>()
 
-    val quotes : LiveData<QuoteList>
+    val quotes : LiveData<Response<QuoteList>>
         get() = quotesLiveData
 
     suspend fun getQuotes(page: Int){
 
         if (NetworkUtils.isOnline(applicationContext)){
-            val result = quoteService.getQuotes(page)
-            if (result.body() != null){
-                quoteDatabase.quoteDao().addQuote(result.body()!!.results)
-                quotesLiveData.postValue(result.body())
+            try {
+                val result = quoteService.getQuotes(page)
+                if (result.body() != null){
+                    quoteDatabase.quoteDao().addQuote(result.body()!!.results)
+                    quotesLiveData.postValue(Response.Success(result.body()))
+                }else{
+                    quotesLiveData.postValue(Response.Error("Api error"))
+                }
+            }catch (e: Exception){
+                    quotesLiveData.postValue(Response.Error(e.message.toString()))
             }
+
         }else {
             val quote = quoteDatabase.quoteDao().getQuote()
             val quoteList = QuoteList(1,1,1,quote,1,1)
-            quotesLiveData.postValue(quoteList)
+            quotesLiveData.postValue(Response.Success(quoteList))
         }
     }
 
